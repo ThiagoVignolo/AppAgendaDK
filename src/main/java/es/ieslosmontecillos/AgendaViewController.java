@@ -4,12 +4,21 @@ package es.ieslosmontecillos;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -31,6 +40,15 @@ public class AgendaViewController implements Initializable {
     private TableColumn<Persona,String> columnEmail;
     @FXML
     private TableColumn<Persona,String> columnProvincia;
+    @FXML
+    private TextField textFieldNombre;
+    @FXML
+    private TextField textFieldApellido;
+
+    private Persona personaSeleccionada;
+    @FXML
+
+    private Pane rootAgendaView;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -46,6 +64,22 @@ public class AgendaViewController implements Initializable {
                     }
                     return property;
                 });
+        tableViewAgenda.getSelectionModel().selectedItemProperty().addListener(
+                (observable,oldValue,newValue)->{
+                    personaSeleccionada=newValue;
+                    if (personaSeleccionada != null){
+                        textFieldNombre.setText(personaSeleccionada.getNombre());
+                        textFieldApellido.setText(personaSeleccionada.getApellidos());
+                    } else {
+                        textFieldNombre.setText("");
+                        textFieldApellido.setText("");
+                    }
+                });
+
+    }
+
+    public void setRootAgendaView(Pane rootAgendaView){
+        this.rootAgendaView = rootAgendaView;
     }
 
     public void setDataUtil(DataUtil dataUtil) {
@@ -66,4 +100,59 @@ public class AgendaViewController implements Initializable {
         tableViewAgenda.setItems(FXCollections.observableArrayList(olPersonas));
     }
 
+    public void onActionButtonGuardar(ActionEvent actionEvent) {
+        if (personaSeleccionada != null) {
+            personaSeleccionada.setNombre(textFieldNombre.getText());
+            personaSeleccionada.setApellidos(textFieldApellido.getText());
+            dataUtil.actualizarPersona(personaSeleccionada);
+            int numFilaSeleccionada = tableViewAgenda.getSelectionModel().getSelectedIndex();
+            tableViewAgenda.getItems().set(numFilaSeleccionada, personaSeleccionada);
+            TablePosition pos = new TablePosition(tableViewAgenda, numFilaSeleccionada, null);
+            tableViewAgenda.getFocusModel().focus(pos);
+            tableViewAgenda.requestFocus();
+        }
+    }
+
+    public void onActionButtonNuevo(ActionEvent event){
+        try{
+            FXMLLoader fxmlLoader = new
+                    FXMLLoader(getClass().getResource("fxml/PersonaDetalleView.fxml"));
+            Parent rootDetalleView=fxmlLoader.load();
+
+            PersonaDetalleViewController personaDetalleViewController =
+                    (PersonaDetalleViewController) fxmlLoader.getController();
+            personaDetalleViewController.setRootAgendaView(rootAgendaView);
+
+            rootAgendaView.setVisible(false);
+
+            StackPane rootMain =
+                    (StackPane) rootAgendaView.getScene().getRoot();
+            rootMain.getChildren().add(rootDetalleView);
+        } catch (IOException ex){
+            System.out.println("Error volcado"+ex);}
+    }
+
+
+    public void onActionButtonEditar(ActionEvent actionEvent) {
+        try{
+            FXMLLoader fxmlLoader = new
+                    FXMLLoader(getClass().getResource("fxml/PersonaDetalleView.fxml"));
+            Parent rootDetalleView=fxmlLoader.load();
+
+            PersonaDetalleViewController personaDetalleViewController =
+                    (PersonaDetalleViewController) fxmlLoader.getController();
+            personaDetalleViewController.setRootAgendaView(rootAgendaView);
+
+            rootAgendaView.setVisible(false);
+
+            StackPane rootMain =
+                    (StackPane) rootAgendaView.getScene().getRoot();
+            rootMain.getChildren().add(rootDetalleView);
+        } catch (IOException ex){
+            System.out.println("Error volcado"+ex);}
+    }
+
+
+    public void onActionButtonSuprimir(ActionEvent actionEvent) {
+    }
 }
