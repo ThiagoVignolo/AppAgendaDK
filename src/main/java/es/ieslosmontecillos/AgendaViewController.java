@@ -9,10 +9,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TablePosition;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
@@ -20,6 +17,7 @@ import javafx.scene.layout.StackPane;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class AgendaViewController implements Initializable {
@@ -114,14 +112,18 @@ public class AgendaViewController implements Initializable {
     }
 
     public void onActionButtonNuevo(ActionEvent event){
-        try{
+        try {
             FXMLLoader fxmlLoader = new
                     FXMLLoader(getClass().getResource("fxml/PersonaDetalleView.fxml"));
-            Parent rootDetalleView=fxmlLoader.load();
+            Parent rootDetalleView = fxmlLoader.load();
 
             PersonaDetalleViewController personaDetalleViewController =
                     (PersonaDetalleViewController) fxmlLoader.getController();
             personaDetalleViewController.setRootAgendaView(rootAgendaView);
+            personaDetalleViewController.setTableViewPrevio(tableViewAgenda);
+            personaDetalleViewController.setDataUtil(dataUtil);
+            personaSeleccionada = new Persona();
+            personaDetalleViewController.setPersona(personaSeleccionada,true);
 
             rootAgendaView.setVisible(false);
 
@@ -142,6 +144,10 @@ public class AgendaViewController implements Initializable {
             PersonaDetalleViewController personaDetalleViewController =
                     (PersonaDetalleViewController) fxmlLoader.getController();
             personaDetalleViewController.setRootAgendaView(rootAgendaView);
+            personaDetalleViewController.setTableViewPrevio(tableViewAgenda);
+            personaDetalleViewController.setDataUtil(dataUtil);
+            personaDetalleViewController.setPersona(personaSeleccionada,false);
+            personaDetalleViewController.mostrarDatos();
 
             rootAgendaView.setVisible(false);
 
@@ -154,5 +160,26 @@ public class AgendaViewController implements Initializable {
 
 
     public void onActionButtonSuprimir(ActionEvent actionEvent) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmar");
+        alert.setHeaderText("¿Desea suprimir el siguiente registro?");
+        alert.setContentText(personaSeleccionada.getNombre() + " "
+                + personaSeleccionada.getApellidos());
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == ButtonType.OK){
+            dataUtil.eliminarPersona(personaSeleccionada);
+            tableViewAgenda.getItems().remove(personaSeleccionada);
+            tableViewAgenda.getFocusModel().focus(null);
+            tableViewAgenda.requestFocus();
+
+        } else {
+            int numFilaSeleccionada=
+                    tableViewAgenda.getSelectionModel().getSelectedIndex();
+            tableViewAgenda.getItems().set(numFilaSeleccionada,personaSeleccionada);
+            TablePosition pos = new TablePosition(tableViewAgenda,
+                    numFilaSeleccionada,null);
+            tableViewAgenda.getFocusModel().focus(pos);
+            tableViewAgenda.requestFocus();
+        }
     }
 }
