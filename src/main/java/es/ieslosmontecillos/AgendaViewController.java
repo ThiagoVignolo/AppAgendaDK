@@ -124,7 +124,7 @@ public class AgendaViewController implements Initializable {
             personaDetalleViewController.setDataUtil(dataUtil);
             personaSeleccionada = new Persona();
             personaDetalleViewController.setPersona(personaSeleccionada,true);
-
+            personaDetalleViewController.mostrarDatos();
             rootAgendaView.setVisible(false);
 
             StackPane rootMain =

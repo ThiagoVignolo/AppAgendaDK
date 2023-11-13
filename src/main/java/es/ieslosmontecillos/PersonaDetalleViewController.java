@@ -149,7 +149,7 @@ public class PersonaDetalleViewController {
         }
 
         if (persona.getEstadoCivil() != null){
-            switch(persona.getEstadoCivil()){
+            switch(persona.getEstadoCivil().charAt(0)){
                 case CASADO:
                     radioButtonCasado.setSelected(true);
                     break;
@@ -162,6 +162,7 @@ public class PersonaDetalleViewController {
             }
         }
 
+        comboBoxProvincia.setItems(dataUtil.getOlProvincias());
 
         comboBoxProvincia.setCellFactory(
                 (ListView<Provincia> l)-> new ListCell<Provincia>(){
